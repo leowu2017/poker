@@ -1,9 +1,17 @@
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Clone, Hash, Debug)]
 pub enum Suit {
     Spade,
     Heart,
     Diamond,
     Club,
+}
+
+impl Suit {
+    pub fn all_suits() -> &'static [Suit; 4] {
+        use Suit::*;
+        static ALL_VALUES: [Suit; 4] = [Spade, Heart, Diamond, Club];
+        &ALL_VALUES
+    }
 }
 
 #[allow(dead_code)]

@@ -2,7 +2,7 @@ use super::suit::Suit;
 use super::value::Value;
 
 // #[derive(PartialOrd, Ord, PartialEq, Eq, Debug)]
-#[derive(Eq, Debug)]
+#[derive(Eq, Clone, Hash, Debug)]
 pub struct Card {
     pub suit: Suit,
     pub value: Value,
@@ -13,6 +13,35 @@ impl Card {
         Card {
             suit: suit,
             value: value,
+        }
+    }
+
+    pub fn all_cards() -> &'static [Card; 52] {
+        lazy_static! {
+            static ref CARDS: [Card; 52] = {
+                let values = Value::all_values();
+                let suits = Suit::all_suits();
+                let cards: [Card; 52] = core::array::from_fn(|idx: usize| {
+                    let value_idx = idx / suits.len();
+                    let suit_idx = idx % suits.len();
+                    Card {
+                        suit: suits[suit_idx].clone(),
+                        value: values[value_idx].clone(),
+                    }
+                });
+                cards
+            };
+        }
+        &CARDS
+    }
+}
+
+impl Default for Card {
+    #[inline]
+    fn default() -> Card {
+        Card {
+            suit: Suit::Spade,
+            value: Value::Ace,
         }
     }
 }

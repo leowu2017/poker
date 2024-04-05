@@ -1,4 +1,4 @@
-#[derive(PartialOrd, Ord, PartialEq, Eq, Debug)]
+#[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Hash, Debug)]
 pub enum Value {
     Two,
     Three,
@@ -13,6 +13,16 @@ pub enum Value {
     Queen,
     King,
     Ace,
+}
+
+impl Value {
+    pub fn all_values() -> &'static [Value; 13] {
+        use Value::*;
+        static ALL_VALUES: [Value; 13] = [
+            Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace,
+        ];
+        &ALL_VALUES
+    }
 }
 
 #[cfg(test)]

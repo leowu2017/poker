@@ -1,3 +1,4 @@
-pub mod card;
-mod suit;
-mod value;
+#[macro_use]
+extern crate lazy_static;
+
+pub mod cards;
