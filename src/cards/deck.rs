@@ -31,18 +31,11 @@ mod tests {
     #[test]
     fn deck_test() {
         use std::collections::HashSet;
-        assert!({
-            let mut hash = HashSet::new();
-            let deck = Deck::new();
-            let mut unique = true;
-            for card in deck.cards.iter() {
-                if hash.contains(card) {
-                    unique = false;
-                    break;
-                }
-                hash.insert(card);
-            }
-            unique
-        });
+        let mut hash = HashSet::new();
+        let deck = Deck::new();
+        for card in deck.cards.iter() {
+            assert!(!hash.contains(card));
+            hash.insert(card);
+        }
     }
 }

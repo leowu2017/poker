@@ -53,6 +53,10 @@ impl Shoe {
     pub fn draw_three(&mut self) -> [Card; 3] {
         self.draw_n::<3>()
     }
+
+    pub fn draw_four(&mut self) -> [Card; 4] {
+        self.draw_n::<4>()
+    }
 }
 
 #[cfg(test)]
