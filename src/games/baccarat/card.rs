@@ -1,10 +1,9 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 use super::number::{all_numbers, Number, ALL_NUMBER_NUM};
-use super::suit::{all_suits, Suit, ALL_SUIT_NUM};
-use super::traits::hash::{UniqueHash, UniqueHashT, ValueHash, ValueHashT};
-use super::traits::order::Order;
-use super::traits::value::Value;
+use crate::cards::suit::{all_suits, Suit, ALL_SUIT_NUM};
+use crate::cards::traits::hash::{UniqueHash, UniqueHashT, ValueHash, ValueHashT};
+use crate::cards::traits::value::Value;
 
 pub const ALL_CARDS_NUM: usize = ALL_SUIT_NUM * ALL_NUMBER_NUM;
 
@@ -25,25 +24,14 @@ impl Card {
     }
 }
 
-impl Order for Card {
-    fn order(&self) -> u64 {
-        // Spade Ace and Heart Ace can be seen as the same order.
-        // But, here we give every card a unique order.
-        self.suit.order() * (ALL_NUMBER_NUM as u64) + self.number.order()
-    }
-}
-
 impl Value for Card {
     fn value(&self) -> i32 {
-        // We take the number as the card value.
         self.number.value()
     }
 }
 
 impl ValueHash for Card {
     fn value_hash(&self) -> ValueHashT {
-        // Every card should have different value.
-        // However, multiple card in a deck with the same suit and number are have same values.
         let mut hasher = DefaultHasher::new();
         self.suit.hash(&mut hasher);
         self.number.hash(&mut hasher);
@@ -65,13 +53,11 @@ pub fn all_cards() -> &'static [Card; ALL_CARDS_NUM] {
         static ref ALL_CARDS: [Card; ALL_CARDS_NUM] = {
             let all_numbers = all_numbers();
             let all_suits = all_suits();
-            let mut all_cards: [Card; ALL_CARDS_NUM] = core::array::from_fn(|idx: usize| {
+            core::array::from_fn(|idx: usize| {
                 let suit_idx = idx / ALL_NUMBER_NUM;
                 let number_idx = idx % ALL_NUMBER_NUM;
                 Card::new(all_suits[suit_idx].clone(), all_numbers[number_idx].clone())
-            });
-            all_cards.sort_by_key(|k| k.order());
-            all_cards
+            })
         };
     }
     &ALL_CARDS
@@ -82,17 +68,6 @@ mod tests {
     use std::collections::HashSet;
 
     use super::*;
-
-    #[test]
-    fn card_order_test() {
-        let card1 = Card::new(Suit::Spade, Number::Ace);
-        let card2 = Card::new(Suit::Spade, Number::Ace);
-        assert_eq!(card1.order(), card2.order());
-        assert_ne!(
-            Card::new(Suit::Spade, Number::Ace).order(),
-            Card::new(Suit::Spade, Number::Two).order()
-        );
-    }
 
     #[test]
     fn card_value_test() {

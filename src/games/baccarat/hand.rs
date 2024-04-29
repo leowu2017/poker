@@ -1,7 +1,8 @@
-use super::rule::card_value;
-use crate::cards::card::Card;
+use crate::cards::traits::value::Value;
 
-#[derive(Eq, Clone, Debug)]
+use super::card::Card;
+
+#[derive(Clone)]
 pub struct Hand {
     pub first: Card,
     pub second: Card,
@@ -18,121 +19,111 @@ impl Hand {
     }
 }
 
-pub fn hand_value(hand: &Hand) -> u8 {
-    let first = card_value(&hand.first);
-    let second = card_value(&hand.second);
-    let third = match hand.third {
-        Some(ref card) => card_value(card),
-        None => 0,
-    };
-    (first + second + third) % 10
-}
-
-use std::cmp::PartialEq;
-impl PartialEq for Hand {
-    fn eq(&self, other: &Self) -> bool {
-        hand_value(&self).eq(&hand_value(&other))
+impl Value for Hand {
+    fn value(&self) -> i32 {
+        let first = self.first.value();
+        let second = self.second.value();
+        let third = match self.third {
+            Some(ref card) => card.value(),
+            None => 0,
+        };
+        (first + second + third) % 10
     }
 }
-
-use std::cmp::Ordering;
-impl Ord for Hand {
-    fn cmp(&self, other: &Self) -> Ordering {
-        hand_value(&self).cmp(&hand_value(&other))
-    }
-}
-
-impl PartialOrd for Hand {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
 pub struct Hands {
     pub player: Option<Hand>,
     pub banker: Option<Hand>,
+}
+
+impl Hands {
+    pub fn new(player_hand: Option<Hand>, banker_hand: Option<Hand>) -> Hands {
+        Hands {
+            player: player_hand,
+            banker: banker_hand,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::cards::suit::Suit;
-    use crate::cards::value::Value;
+    use crate::games::baccarat::number::Number;
 
     #[test]
     fn hand_value_test() {
         // A, 2
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Ace),
-            second: Card::new(Suit::Spade, Value::Two),
+            first: Card::new(Suit::Spade, Number::Ace),
+            second: Card::new(Suit::Spade, Number::Two),
             third: None,
         };
-        assert_eq!(hand_value(&hand), 3);
+        assert_eq!(hand.value(), 3);
 
         // A, 9
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Ace),
-            second: Card::new(Suit::Spade, Value::Nine),
+            first: Card::new(Suit::Spade, Number::Ace),
+            second: Card::new(Suit::Spade, Number::Nine),
             third: None,
         };
-        assert_eq!(hand_value(&hand), 0);
+        assert_eq!(hand.value(), 0);
 
         // J, Q
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Jack),
-            second: Card::new(Suit::Spade, Value::Queen),
+            first: Card::new(Suit::Spade, Number::Jack),
+            second: Card::new(Suit::Spade, Number::Queen),
             third: None,
         };
-        assert_eq!(hand_value(&hand), 0);
+        assert_eq!(hand.value(), 0);
 
         // 7, 8, 9
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Seven),
-            second: Card::new(Suit::Spade, Value::Eight),
-            third: Some(Card::new(Suit::Spade, Value::Nine)),
+            first: Card::new(Suit::Spade, Number::Seven),
+            second: Card::new(Suit::Spade, Number::Eight),
+            third: Some(Card::new(Suit::Spade, Number::Nine)),
         };
-        assert_eq!(hand_value(&hand), 4);
+        assert_eq!(hand.value(), 4);
     }
 
     #[test]
-    fn hand_order_test() {
+    fn hand_value_compare_test() {
         // A, 2 vs 2, J
         let hand1 = Hand {
-            first: Card::new(Suit::Spade, Value::Ace),
-            second: Card::new(Suit::Spade, Value::Two),
+            first: Card::new(Suit::Spade, Number::Ace),
+            second: Card::new(Suit::Spade, Number::Two),
             third: None,
         };
         let hand2 = Hand {
-            first: Card::new(Suit::Heart, Value::Two),
-            second: Card::new(Suit::Heart, Value::Jack),
+            first: Card::new(Suit::Heart, Number::Two),
+            second: Card::new(Suit::Heart, Number::Jack),
             third: None,
         };
-        assert!(hand1 > hand2);
+        assert!(hand1.value() > hand2.value());
 
         // 5, 4 vs 2, J, 7
         let hand1 = Hand {
-            first: Card::new(Suit::Spade, Value::Five),
-            second: Card::new(Suit::Spade, Value::Four),
+            first: Card::new(Suit::Spade, Number::Five),
+            second: Card::new(Suit::Spade, Number::Four),
             third: None,
         };
         let hand2 = Hand {
-            first: Card::new(Suit::Heart, Value::Two),
-            second: Card::new(Suit::Heart, Value::Jack),
-            third: Some(Card::new(Suit::Heart, Value::Seven)),
+            first: Card::new(Suit::Heart, Number::Two),
+            second: Card::new(Suit::Heart, Number::Jack),
+            third: Some(Card::new(Suit::Heart, Number::Seven)),
         };
-        assert!(hand1 == hand2);
+        assert_eq!(hand1.value(), hand2.value());
 
         // 5, 4, 3 vs 2, J, 7
         let hand1 = Hand {
-            first: Card::new(Suit::Spade, Value::Five),
-            second: Card::new(Suit::Spade, Value::Four),
-            third: Some(Card::new(Suit::Spade, Value::Three)),
+            first: Card::new(Suit::Spade, Number::Five),
+            second: Card::new(Suit::Spade, Number::Four),
+            third: Some(Card::new(Suit::Spade, Number::Three)),
         };
         let hand2 = Hand {
-            first: Card::new(Suit::Heart, Value::Two),
-            second: Card::new(Suit::Heart, Value::Jack),
-            third: Some(Card::new(Suit::Heart, Value::Seven)),
+            first: Card::new(Suit::Heart, Number::Two),
+            second: Card::new(Suit::Heart, Number::Jack),
+            third: Some(Card::new(Suit::Heart, Number::Seven)),
         };
-        assert!(hand1 < hand2);
+        assert!(hand1.value() < hand2.value());
     }
 }

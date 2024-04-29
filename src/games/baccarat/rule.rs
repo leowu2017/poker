@@ -1,34 +1,9 @@
-use super::hand::{hand_value, Hand};
-use crate::cards::card::Card;
-use crate::cards::value::Value;
-
-pub fn card_value(card: &Card) -> u8 {
-    use std::collections::HashMap;
-    lazy_static! {
-        static ref MAP: HashMap<Value, u8> = {
-            use Value::*;
-            let mut map = HashMap::new();
-            map.insert(Ace, 1);
-            map.insert(Two, 2);
-            map.insert(Three, 3);
-            map.insert(Four, 4);
-            map.insert(Five, 5);
-            map.insert(Six, 6);
-            map.insert(Seven, 7);
-            map.insert(Eight, 8);
-            map.insert(Nine, 9);
-            map.insert(Ten, 0);
-            map.insert(Jack, 0);
-            map.insert(Queen, 0);
-            map.insert(King, 0);
-            map
-        };
-    }
-    MAP[&card.value]
-}
+use super::card::Card;
+use super::hand::Hand;
+use crate::cards::traits::value::Value;
 
 pub fn is_natural(hand: &Hand) -> bool {
-    let value = hand_value(hand);
+    let value = hand.value();
     value == 8 || value == 9
 }
 
@@ -37,15 +12,14 @@ pub fn contain_natural(hand1: &Hand, hand2: &Hand) -> bool {
 }
 
 pub fn should_player_hit(hand: &Hand) -> bool {
-    let value = hand_value(hand);
-    value <= 5
+    hand.value() <= 5
 }
 
 pub fn should_banker_hit(player_third: &Option<Card>, hand: &Hand) -> bool {
-    let value = hand_value(hand);
+    let value = hand.value();
     match player_third {
         Some(ref card) => {
-            let player_third = card_value(card);
+            let player_third = card.value();
             if value <= 2 {
                 true
             } else if value == 3 {
@@ -68,37 +42,38 @@ pub fn should_banker_hit(player_third: &Option<Card>, hand: &Hand) -> bool {
 mod tests {
     use super::*;
     use crate::cards::suit::Suit;
+    use crate::games::baccarat::number::Number;
 
     #[test]
     fn rule_card_value_test() {
-        assert_eq!(card_value(&Card::new(Suit::Spade, Value::Ace)), 1);
-        assert_eq!(card_value(&Card::new(Suit::Heart, Value::Four)), 4);
-        assert_eq!(card_value(&Card::new(Suit::Diamond, Value::Ten)), 0);
-        assert_eq!(card_value(&Card::new(Suit::Club, Value::King)), 0);
+        assert_eq!(Card::new(Suit::Spade, Number::Ace).value(), 1);
+        assert_eq!(Card::new(Suit::Heart, Number::Four).value(), 4);
+        assert_eq!(Card::new(Suit::Diamond, Number::Ten).value(), 0);
+        assert_eq!(Card::new(Suit::Club, Number::King).value(), 0);
     }
 
     #[test]
     fn rule_natural_test() {
         // 4, 4
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Four),
-            second: Card::new(Suit::Heart, Value::Four),
+            first: Card::new(Suit::Spade, Number::Four),
+            second: Card::new(Suit::Heart, Number::Four),
             third: None,
         };
         assert_eq!(is_natural(&hand), true);
 
         // 4. 5
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Four),
-            second: Card::new(Suit::Spade, Value::Five),
+            first: Card::new(Suit::Spade, Number::Four),
+            second: Card::new(Suit::Spade, Number::Five),
             third: None,
         };
         assert_eq!(is_natural(&hand), true);
 
         // 4. 3
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Four),
-            second: Card::new(Suit::Spade, Value::Three),
+            first: Card::new(Suit::Spade, Number::Four),
+            second: Card::new(Suit::Spade, Number::Three),
             third: None,
         };
         assert_eq!(is_natural(&hand), false);
@@ -108,68 +83,68 @@ mod tests {
     fn rule_should_hit_test() {
         // 2, 3
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Two),
-            second: Card::new(Suit::Spade, Value::Three),
+            first: Card::new(Suit::Spade, Number::Two),
+            second: Card::new(Suit::Spade, Number::Three),
             third: None,
         };
         assert_eq!(should_player_hit(&hand), true);
 
         // 3, 3
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Three),
-            second: Card::new(Suit::Heart, Value::Three),
+            first: Card::new(Suit::Spade, Number::Three),
+            second: Card::new(Suit::Heart, Number::Three),
             third: None,
         };
         assert_eq!(should_player_hit(&hand), false);
 
         // _, _, 7 and 1, 2
-        let player_third = Some(Card::new(Suit::Spade, Value::Seven));
+        let player_third = Some(Card::new(Suit::Spade, Number::Seven));
         let hand = Hand {
-            first: Card::new(Suit::Heart, Value::Ace),
-            second: Card::new(Suit::Heart, Value::Two),
+            first: Card::new(Suit::Heart, Number::Ace),
+            second: Card::new(Suit::Heart, Number::Two),
             third: None,
         };
         assert_eq!(should_banker_hit(&player_third, &hand), true);
 
         // _, _, 8 and 1, 2
-        let player_third = Some(Card::new(Suit::Spade, Value::Eight));
+        let player_third = Some(Card::new(Suit::Spade, Number::Eight));
         let hand = Hand {
-            first: Card::new(Suit::Heart, Value::Ace),
-            second: Card::new(Suit::Heart, Value::Two),
+            first: Card::new(Suit::Heart, Number::Ace),
+            second: Card::new(Suit::Heart, Number::Two),
             third: None,
         };
         assert_eq!(should_banker_hit(&player_third, &hand), false);
 
         // _, _, 3 and 2, 3
-        let player_third = Some(Card::new(Suit::Spade, Value::Three));
+        let player_third = Some(Card::new(Suit::Spade, Number::Three));
         let hand = Hand {
-            first: Card::new(Suit::Heart, Value::Two),
-            second: Card::new(Suit::Heart, Value::Three),
+            first: Card::new(Suit::Heart, Number::Two),
+            second: Card::new(Suit::Heart, Number::Three),
             third: None,
         };
         assert_eq!(should_banker_hit(&player_third, &hand), false);
 
         // _, _, 4 and 2, 3
-        let player_third = Some(Card::new(Suit::Spade, Value::Four));
+        let player_third = Some(Card::new(Suit::Spade, Number::Four));
         let hand = Hand {
-            first: Card::new(Suit::Heart, Value::Two),
-            second: Card::new(Suit::Heart, Value::Three),
+            first: Card::new(Suit::Heart, Number::Two),
+            second: Card::new(Suit::Heart, Number::Three),
             third: None,
         };
         assert_eq!(should_banker_hit(&player_third, &hand), true);
 
         // _, _ and 3, 3
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Three),
-            second: Card::new(Suit::Heart, Value::Three),
+            first: Card::new(Suit::Spade, Number::Three),
+            second: Card::new(Suit::Heart, Number::Three),
             third: None,
         };
         assert_eq!(should_banker_hit(&None, &hand), false);
 
         // _, _ and 2, 3
         let hand = Hand {
-            first: Card::new(Suit::Spade, Value::Two),
-            second: Card::new(Suit::Spade, Value::Three),
+            first: Card::new(Suit::Spade, Number::Two),
+            second: Card::new(Suit::Spade, Number::Three),
             third: None,
         };
         assert_eq!(should_banker_hit(&None, &hand), true);

@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 use super::card::{all_cards, Card, ALL_CARDS_NUM};
-use super::traits::deck::Deck;
-use super::traits::hash::{UniqueHash, ValueHash, ValueHashT};
-use super::traits::shoe::Shoe as ShoeTrait;
+use crate::cards::traits::deck::Deck;
+use crate::cards::traits::hash::{UniqueHash, ValueHash, ValueHashT};
+use crate::cards::traits::shoe::Shoe as ShoeTrait;
 
 #[derive(Clone)]
 pub struct Shoe {
@@ -101,9 +101,9 @@ impl ShoeTrait<Card> for Shoe {
 
 #[cfg(test)]
 mod tests {
-    use crate::cards::number::Number;
     use crate::cards::suit::Suit;
     use crate::cards::traits::hash::UniqueHash;
+    use crate::games::baccarat::number::Number;
 
     use super::*;
 

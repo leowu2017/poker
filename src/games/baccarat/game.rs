@@ -1,15 +1,16 @@
-use std::cmp::Ordering;
+use super::rule::{contain_natural, should_banker_hit, should_player_hit};
+use super::{hand::Hand, hand::Hands, shoe::Shoe};
+use crate::cards::traits::shoe::Shoe as ShoeTrait;
+use crate::cards::traits::value::Value;
 
-use super::{hand::Hand, hand::Hands, rule::contain_natural};
-use crate::cards::shoe::Shoe;
 pub struct Game {
     pub shoe: Shoe,
     pub hands: Hands,
     pub results: Vec<Result>,
 }
 pub struct Result {
-    hands: Hands,
-    winner: Winner,
+    pub hands: Hands,
+    pub winner: Winner,
 }
 
 #[derive(PartialEq, Eq, Debug)]
@@ -44,9 +45,17 @@ impl Game {
             (self.hands.player.as_mut(), self.hands.banker.as_mut())
         {
             if !contain_natural(player_hand, banker_hand) {
-                let [card0, card1] = self.shoe.draw_two();
-                player_hand.third = Some(card0);
-                banker_hand.third = Some(card1);
+                if should_player_hit(player_hand) {
+                    let card = self.shoe.draw();
+                    player_hand.third = Some(card);
+                }
+                if should_banker_hit(&player_hand.third, banker_hand) {
+                    let card = self.shoe.draw();
+                    banker_hand.third = Some(card);
+                }
+                // let [card0, card1] = self.shoe.draw_two();
+                // player_hand.third = Some(card0);
+                // banker_hand.third = Some(card1);
             }
         }
     }
@@ -55,10 +64,12 @@ impl Game {
         if let (Some(player_hand), Some(banker_hand)) =
             (self.hands.player.as_ref(), self.hands.banker.as_ref())
         {
-            Some(match player_hand.cmp(banker_hand) {
-                Ordering::Greater => Winner::PLAYER,
-                Ordering::Less => Winner::BANKER,
-                Ordering::Equal => Winner::TIE,
+            Some(if player_hand.value() > banker_hand.value() {
+                Winner::PLAYER
+            } else if player_hand.value() < banker_hand.value() {
+                Winner::BANKER
+            } else {
+                Winner::TIE
             })
         } else {
             None
@@ -92,10 +103,46 @@ mod tests {
         let deck_num = 8;
         let mut game = Game::new(deck_num);
 
-        // A, A, 2 vs A, A, 2
+        // A, 3, 5 vs 2, 4
         game.play_one_round();
         assert!(!game.results.last().is_none());
         let result = game.results.last().unwrap();
-        assert_eq!(result.winner, Winner::TIE);
+        assert_eq!(result.winner, Winner::PLAYER);
+
+        // 6, 8, T vs 7, 9
+        game.play_one_round();
+        assert!(!game.results.last().is_none());
+        let result = game.results.last().unwrap();
+        assert_eq!(result.winner, Winner::BANKER);
+
+        // J, K, 2 vs Q, A, 3
+        game.play_one_round();
+        assert!(!game.results.last().is_none());
+        let result = game.results.last().unwrap();
+        assert_eq!(result.winner, Winner::BANKER);
+
+        // 4, 6, 8 vs 5, 7, 9
+        game.play_one_round();
+        assert!(!game.results.last().is_none());
+        let result = game.results.last().unwrap();
+        assert_eq!(result.winner, Winner::PLAYER);
+
+        // T, Q, A vs J, K, 2
+        game.play_one_round();
+        assert!(!game.results.last().is_none());
+        let result = game.results.last().unwrap();
+        assert_eq!(result.winner, Winner::BANKER);
+
+        // 3, 5 vs 4, 6
+        game.play_one_round();
+        assert!(!game.results.last().is_none());
+        let result = game.results.last().unwrap();
+        assert_eq!(result.winner, Winner::PLAYER);
+
+        // 7, 9 vs 8, T
+        game.play_one_round();
+        assert!(!game.results.last().is_none());
+        let result = game.results.last().unwrap();
+        assert_eq!(result.winner, Winner::BANKER);
     }
 }
