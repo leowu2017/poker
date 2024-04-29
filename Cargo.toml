@@ -8,3 +8,11 @@ edition = "2021"
 [dependencies]
 lazy_static = "=1.4.0"
 rand = "0.8.5"
+
+[lib]
+name = "poker"
+path = "src/lib.rs"
+
+[[bin]]
+name = "baccarat-perf"
+path = "src/bin/baccarat/perf.rs"
