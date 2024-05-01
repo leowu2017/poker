@@ -292,18 +292,32 @@ mod tests {
     fn shoe_set_card_test() {
         const DECK_NUM: usize = 4;
         let mut shoe = Shoe::new(DECK_NUM);
-        let card0 = shoe.cards[0].value_hash();
-        let card1 = shoe.cards[1].value_hash();
-        let card2 = shoe.cards[2].value_hash();
 
-        shoe.set_card(&shoe.cards[1].clone());
-        assert_eq!(shoe.cards[0].value_hash(), card1);
-        assert_eq!(shoe.cards[1].value_hash(), card0);
-        assert_eq!(shoe.cards[2].value_hash(), card2);
+        let mut inserted_cards =Vec::new();
+        // get first card
+        let card0 = shoe.cards.last().unwrap().clone();
 
-        shoe.set_card(&shoe.cards[2].clone());
-        assert_eq!(shoe.cards[0].value_hash(), card1);
-        assert_eq!(shoe.cards[1].value_hash(), card2);
-        assert_eq!(shoe.cards[2].value_hash(), card0);
+        // insert card0 DECK_NUM times
+        for _ in 0..DECK_NUM {
+            inserted_cards.push(&card0);
+            let result = shoe.set_card(&card0);
+            assert_eq!(result, Ok(()));
+        }
+
+        // next card
+        let card1 = shoe.cards.last().unwrap().clone();
+        assert_ne!(card0.value_hash(), card1.value_hash());
+
+        // insert card1 DECK_NUM times
+        for _ in 0..DECK_NUM {
+            inserted_cards.push(&card1);
+            let result = shoe.set_card(&card1);
+            assert_eq!(result, Ok(()));
+        }
+
+        // check first DECK_NUM * 2 values
+        for idx in 0..(DECK_NUM * 2) {
+            assert_eq!(shoe.cards[idx].value_hash(), inserted_cards[idx].value_hash());
+        }
     }
 }

@@ -89,17 +89,18 @@ pub trait Shoe<Card: Sized + ValueHash>: Deck {
         }
     }
 
-    fn set_card(&mut self, target_card: &Card) {
+    fn set_card(&mut self, target_card: &Card) -> Result<(), &'static str> {
         let card_idx = self.get_card_idx();
         if target_card.value_hash() == self.get_card_ref(card_idx).value_hash() {
             self.inc_card_idx();
-            return;
+            return Ok(());
         }
         let target_idx = self.find_card_idx_after(target_card, card_idx);
         let Some(target_idx) = target_idx else {
-            return;
+            return Err("card does not exist");
         };
         self.swap(card_idx, target_idx);
         self.inc_card_idx();
+        Ok(())
     }
 }
