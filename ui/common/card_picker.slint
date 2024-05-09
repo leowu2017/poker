@@ -1,0 +1,181 @@
+import { ComboBox, ListView } from "std-widgets.slint";
+import { Card } from "card.slint";
+export component CardPicker {
+    // callback
+    callback picked(string, string);
+    // constant
+    out property <string> SPADE: "♠";
+    out property <string> HEART: "♥";
+    out property <string> DIAMOND: "♦";
+    out property <string> CLUB: "♣";
+    // UI
+    in-out property <length> cell-height: 50px;
+    in-out property <length> scroll-height: cell-height * 4.5;
+    // value
+    out property <string> suit;
+    out property <string> number;
+    height: cell-height;
+    width: 200px;
+    init => {
+        hideSuit();
+        hideNumber();
+    }
+    VerticalLayout {
+        width: parent.width;
+        // pick
+        TouchArea {
+            height: root.cell-height;
+            width: parent.width;
+            Rectangle {
+                height: parent.height;
+                width: root.width;
+                background: whitesmoke;
+                border-width: self.height / 50;
+                border-color: Colors.darkgrey;
+                HorizontalLayout {
+                    padding-left: self.height * 0.4;
+                    padding-right: self.height * 0.4;
+                    Text {
+                        horizontal-stretch: 1;
+                        vertical-alignment: center;
+                        text: "pick";
+                        font-size: self.height * 0.6;
+                        color: Colors.black;
+                    }
+
+                    Text {
+                        vertical-alignment: center;
+                        text: "▼";
+                        font-size: self.height * 0.5;
+                        color: Colors.black;
+                    }
+                }
+            }
+
+            clicked => {
+                pickClicked();
+            }
+        }
+
+        Rectangle {
+            height: root.scroll-height;
+            width: parent.width;
+            suits := ListView {
+                height: parent.height;
+                width: parent.width;
+                for suit in [root.SPADE, root.HEART, root.CLUB, root.DIAMOND]: TouchArea {
+                    height: root.cell-height;
+                    width: parent.width;
+                    Rectangle {
+                        height: parent.height;
+                        width: parent.width;
+                        background: whitesmoke;
+                        border-width: self.height / 50;
+                        border-color: Colors.darkgrey;
+                        Text {
+                            vertical-alignment: center;
+                            horizontal-alignment: left;
+                            x: parent.height * 0.4;
+                            text: suit;
+                            font-size: parent.height * 0.8;
+                            color: getColorFromSuit(suit);
+                        }
+                    }
+
+                    clicked => {
+                        suitClicked(suit);
+                    }
+                }
+            }
+
+            numbers := ListView {
+                width: parent.width;
+                height: parent.height;
+                for number in ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]: TouchArea {
+                    height: root.cell-height;
+                    width: parent.width;
+                    Rectangle {
+                        height: parent.height;
+                        width: parent.width;
+                        background: whitesmoke;
+                        border-width: self.height / 50;
+                        border-color: Colors.darkgrey;
+                        suit0 := Text {
+                            vertical-alignment: center;
+                            horizontal-alignment: left;
+                            x: parent.height * 0.4;
+                            text: root.suit;
+                            font-size: parent.height * 0.8;
+                            color: getColorFromSuit(root.suit);
+                        }
+
+                        Text {
+                            vertical-alignment: center;
+                            horizontal-alignment: left;
+                            x: parent.height * 0.9;
+                            y: parent.height * 0.2;
+                            text: number;
+                            font-size: parent.height * 0.6;
+                            color: getColorFromSuit(root.suit);
+                        }
+                    }
+
+                    clicked => {
+                        numberClicked(number)
+                    }
+                }
+            }
+        }
+    }
+
+    // helpers
+    function getColorFromSuit(suit:string) -> color {
+        ((suit == self.HEART) || suit == self.DIAMOND) ? Colors.maroon : Colors.black;
+    }
+    function anyOptionsShown() -> bool {
+        suits.visible || numbers.visible;
+    }
+    // clicks
+    function pickClicked(){
+        anyOptionsShown() ? hideAll() : showSuit();
+    }
+    function suitClicked(suit:string){
+        hideSuit();
+        showNumber();
+        setSuit(suit);
+    }
+    function numberClicked(number:string){
+        hideSuit();
+        hideNumber();
+        setNumber(number);
+    }
+    // hide/show UI
+    function hideAll(){
+        hideSuit();
+        hideNumber();
+    }
+    function hideSuit(){
+        suits.visible = false;
+        suits.x = suits.width;
+    }
+    function showSuit(){
+        suits.visible = true;
+        suits.x = 0;
+    }
+    function hideNumber(){
+        numbers.visible = false;
+        numbers.x = numbers.width;
+    }
+    function showNumber(){
+        numbers.visible = true;
+        numbers.x = 0;
+    }
+    // set values
+    function setSuit(suit:string){
+        self.suit = suit;
+    }
+    function setNumber(number:string){
+        self.number = number;
+        picked(self.suit, self.number);
+    }
+}

@@ -1,0 +1,35 @@
+export component Card {
+    in-out property <string> suit: "♠";
+    in-out property <string> number: "A";
+    in-out property <length> card-width: 200px;
+    in-out property <brush> color: Colors.maroon;
+    in-out property <brush> background-color: Colors.snow;
+    in-out property <brush> border-color: Colors.darkgrey;
+    width <=> r.width;
+    height <=> r.height;
+    r := Rectangle {
+        width: root.card-width;
+        height: r.width * 88 / 63;
+        background: root.background-color;
+        border-width: r.width / 100;
+        border-color: root.border-color;
+        border-radius: r.width / 10;
+        Text {
+            y: r.width / 5;
+            text: root.number;
+            font-size: r.width * 2 / 5;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+            color: root.color;
+        }
+
+        Text {
+            y: r.width / 2;
+            text: root.suit;
+            font-size: r.width * 2 / 3;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+            color: root.color;
+        }
+    }
+}
