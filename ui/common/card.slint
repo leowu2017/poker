@@ -1,8 +1,9 @@
+import { Const, Helper } from "const.slint";
 export component Card {
-    in-out property <string> suit: "♠";
-    in-out property <string> number: "A";
+    in-out property <string> suit: Const.SPADE;
+    in-out property <string> number: Const.NUMBER_A;
     in-out property <length> card-width: 200px;
-    in-out property <brush> color: Colors.maroon;
+    in-out property <brush> color: Helper.getColorFromSuit(suit);
     in-out property <brush> background-color: Colors.snow;
     in-out property <brush> border-color: Colors.darkgrey;
     width <=> r.width;

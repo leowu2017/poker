@@ -1,0 +1,30 @@
+export global Const {
+    // suit
+    out property <string> SPADE: "♠";
+    out property <string> HEART: "♥";
+    out property <string> DIAMOND: "♦";
+    out property <string> CLUB: "♣";
+    // number
+    out property <string> NUMBER_A: "A";
+    out property <string> NUMBER_2: "2";
+    out property <string> NUMBER_3: "3";
+    out property <string> NUMBER_4: "4";
+    out property <string> NUMBER_5: "5";
+    out property <string> NUMBER_6: "6";
+    out property <string> NUMBER_7: "7";
+    out property <string> NUMBER_8: "8";
+    out property <string> NUMBER_9: "9";
+    out property <string> NUMBER_10: "T";
+    out property <string> NUMBER_J: "J";
+    out property <string> NUMBER_Q: "Q";
+    out property <string> NUMBER_K: "K";
+    // color
+    out property <brush> RED_COLOR: Colors.maroon;
+    out property <brush> BLACK_COLOR: Colors.black;
+}
+
+export global Helper {
+    public pure function getColorFromSuit(suit:string) -> brush {
+        ((suit == Const.HEART) || suit == Const.DIAMOND) ? Const.RED_COLOR : Const.BLACK_COLOR;
+    }
+}

@@ -1,13 +1,10 @@
 import { ComboBox, ListView } from "std-widgets.slint";
 import { Card } from "card.slint";
+import { Const, Helper } from "const.slint";
+import { Lang } from "lang.slint";
 export component CardPicker {
     // callback
     callback picked(string, string);
-    // constant
-    out property <string> SPADE: "♠";
-    out property <string> HEART: "♥";
-    out property <string> DIAMOND: "♦";
-    out property <string> CLUB: "♣";
     // UI
     in-out property <length> cell-height: 50px;
     in-out property <length> scroll-height: cell-height * 4.5;
@@ -16,10 +13,6 @@ export component CardPicker {
     out property <string> number;
     height: cell-height;
     width: 200px;
-    init => {
-        hideSuit();
-        hideNumber();
-    }
     VerticalLayout {
         width: parent.width;
         // pick
@@ -38,7 +31,7 @@ export component CardPicker {
                     Text {
                         horizontal-stretch: 1;
                         vertical-alignment: center;
-                        text: "pick";
+                        text: Lang.PICK;
                         font-size: self.height * 0.6;
                         color: Colors.black;
                     }
@@ -63,7 +56,7 @@ export component CardPicker {
             suits := ListView {
                 height: parent.height;
                 width: parent.width;
-                for suit in [root.SPADE, root.HEART, root.CLUB, root.DIAMOND]: TouchArea {
+                for suit in [Const.SPADE, Const.HEART, Const.CLUB, Const.DIAMOND]: TouchArea {
                     height: root.cell-height;
                     width: parent.width;
                     Rectangle {
@@ -78,7 +71,7 @@ export component CardPicker {
                             x: parent.height * 0.4;
                             text: suit;
                             font-size: parent.height * 0.8;
-                            color: getColorFromSuit(suit);
+                            color: Helper.getColorFromSuit(suit);
                         }
                     }
 
@@ -91,7 +84,21 @@ export component CardPicker {
             numbers := ListView {
                 width: parent.width;
                 height: parent.height;
-                for number in ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]: TouchArea {
+                for number in [
+                    Const.NUMBER_A,
+                    Const.NUMBER_2,
+                    Const.NUMBER_3,
+                    Const.NUMBER_4,
+                    Const.NUMBER_5,
+                    Const.NUMBER_6,
+                    Const.NUMBER_7,
+                    Const.NUMBER_8,
+                    Const.NUMBER_9,
+                    Const.NUMBER_10,
+                    Const.NUMBER_J,
+                    Const.NUMBER_Q,
+                    Const.NUMBER_K,
+                ]: TouchArea {
                     height: root.cell-height;
                     width: parent.width;
                     Rectangle {
@@ -106,7 +113,7 @@ export component CardPicker {
                             x: parent.height * 0.4;
                             text: root.suit;
                             font-size: parent.height * 0.8;
-                            color: getColorFromSuit(root.suit);
+                            color: Helper.getColorFromSuit(root.suit);
                         }
 
                         Text {
@@ -116,7 +123,7 @@ export component CardPicker {
                             y: parent.height * 0.2;
                             text: number;
                             font-size: parent.height * 0.6;
-                            color: getColorFromSuit(root.suit);
+                            color: Helper.getColorFromSuit(root.suit);
                         }
                     }
 
@@ -128,14 +135,14 @@ export component CardPicker {
         }
     }
 
-    // helpers
-    function getColorFromSuit(suit:string) -> color {
-        ((suit == self.HEART) || suit == self.DIAMOND) ? Colors.maroon : Colors.black;
+    init => {
+        hideSuit();
+        hideNumber();
     }
+    // clicks
     function anyOptionsShown() -> bool {
         suits.visible || numbers.visible;
     }
-    // clicks
     function pickClicked(){
         anyOptionsShown() ? hideAll() : showSuit();
     }
